@@ -1,47 +1,136 @@
 let spreadsheetId = '1ZP7CV62b-xUMhna4JfBgJC8UkXJCl9GfrexKFh4BfKA';
-
 let apikey = 'AIzaSyAgebuGDMcuSoaxY5khfYeQpsX3SlzTGB8';
+let discoveryDocs = [];
+discoveryDocs.push('https://sheets.googleapis.com/$discovery/rest?version=v4');
 
-let discovery_docs = [];
-discovery_docs.push('https://sheets.googleapis.com/$discovery/rest?version=v4');
+let myWidth = 1366;
+let myHeight = 1000;
+let scl;
 
-let status_bar = "";
-
+let statusBar = "";
 let dudes = [];
+let theDude;
 
+let className = 'Introducción a la programación';
+let semester;
+
+let mockupImage;
+let backgroundImage;
+let headerImage;
+let statsBackgroundImage;
+let cutBanner;
+let cutBackground;
+
+let mainFont;
+let secondaryFont;
+
+let darkColor = '#142624';
+
+function preload() {
+  mainFont = loadFont('assets/TimesBold.ttf');
+  secondaryFont = loadFont('assets/GothamBook.ttf');
+  mockupImage = loadImage('assets/mockup.png');
+  backgroundImage = loadImage('assets/background.png');
+  headerImage = loadImage('assets/header.png');
+  statsBackground = loadImage('assets/statsBackground.png');
+  cutBanner = loadImage('assets/cutBanner.png');
+  cutBackground = loadImage('assets/cutBackground.png');
+}
 
 
 function setup() {
-  createCanvas(500, 500);
+  updateScale();
+  createCanvas(windowWidth, myHeight*scl);
+  semester = year()+'-'+((month() <= 6)?'1':'2');
 }
 
 
 function draw() {
+  scale(scl);
   background(255, 255, 200);
-  textAlign(CENTER, CENTER);
-  textSize(12);
-  text("Under construction", width/2, height/2);
-
+  
+  //drawImage(mockupImage, 0, 0);
+  drawImage(backgroundImage, 0, 0);
+  drawImage(headerImage, 0, 0);
+  drawImage(statsBackground, 40, 180);
+  drawImage(cutBanner, 372, 180);
+  drawImage(cutBanner, 372, 454);
+  drawImage(cutBanner, 372, 728);
+  drawImage(cutBackground, 566, 180);
+  drawImage(cutBackground, 566, 454);
+  drawImage(cutBackground, 566, 728);
+  
+  
+  textAlign(LEFT, BASELINE);
+  
+  textFont(mainFont);
+  textSize(40);
+  fill(darkColor);
+  text(className, 40, 67);
+  let xSem = 40+textWidth(className);
+  textSize(25);
+  text(' / '+semester, xSem, 67);
+  
+  if(theDude){
+    textFont(secondaryFont);
+    textSize(24);
+    text(theDude.Nombres+' '+theDude.Apellidos, 40, 96);
+    textSize(16);
+    text(theDude.Id, 40, 115);
+  }
+  
+  
+  //Barra de mensajes
   textAlign(RIGHT, BOTTOM);
   textSize(10);
-  text(status_bar, width, height);
+  text(statusBar, myWidth, myHeight);
+  
 }
 
+function drawImage(theImage, x, y){
+  if(theImage){
+    image(theImage, x, y);
+  }
+}
+
+//function setBackgroundImage(data) {
+//  backgroundImage = data;
+//}
+
+//function setHeaderImage(data) {
+//  headerImage = data;
+//}
+
+//function setMockup(data) {
+  //mockup = data;
+//}
+
+function windowResized() {
+  updateScale();
+  resizeCanvas(windowWidth, myHeight*scl);
+}
+
+function updateScale(){
+  scl = windowWidth/myWidth;
+}
+
+////////// Metodos de la API de consulta //////////
+
 function apiLoaded() {
-  status_bar += 'Api cargada!\t|\t';
+  statusBar += 'Api cargada!\t|\t';
   gapi.load('client:auth2', initClient);
 }
 
 function initClient() {
-  status_bar += 'Cliente cargado!\t|\t';
+  statusBar += 'Cliente cargado!\t|\t';
   gapi.client.init(
     {
       'apiKey': apikey, 
-      'discoveryDocs': discovery_docs,
+      'discoveryDocs': discoveryDocs,
     }
   ).then(
     function() {
-      status_bar += 'Cliente iniciado!\t|\t';
+      statusBar += 'Cliente iniciado!\t|\t';
       loadData();
     }
   );
@@ -88,7 +177,9 @@ function loadData() {
           agregarGrupoNotas(response.result.valueRanges[hoja].values, corte, grupo);    
         }
       }
-      status_bar += 'Notas cargadas:'+dudes.length+'!\t|\t';
+      statusBar += 'Estudiantes disponibles:'+dudes.length+'!\t|\t';
+      theDude = dudes[0];
+      statusBar += 'Estudiante cargado:'+theDude.Nombres+'!\t|\t';
     }, 
   
     function(reason) {
