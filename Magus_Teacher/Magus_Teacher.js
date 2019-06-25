@@ -36,8 +36,8 @@ let grayColor = '#A0A0A0';
 let darkColor = '#142624';
 
 function preload() {
-  //  mainFont = loadFont('assets/TimesBold.ttf');
-  //  secondaryFont = loadFont('assets/GothamBook.ttf');
+  mainFont = loadFont('assets/TimesBold.ttf');
+  secondaryFont = loadFont('assets/GothamBook.ttf');
   //  mockupImage = loadImage('assets/mockup.png');
   //  backgroundImage = loadImage('assets/background.png');
   //  headerImage = loadImage('assets/header.png');
@@ -313,10 +313,9 @@ function loadData() {
   var params = {   
     spreadsheetId: spreadsheetId, // The ID of the spreadsheet to retrieve data from.
     ranges: [
-      "Curso!A1:C50",//0
+      "Curso!A1:J50",//0
       "Notas!A1:Z1000", //1
-      "Ausencias!A1:D100", //2
-      "Q&T 1!A1:Z100", //3
+      "Q&T 1!A1:Z100", //2
       "Taller 1!A1:Z100", //3
       "Parcial 1!A1:Z100", //4
       "Q&T 2!A1:Z100", //5
@@ -344,16 +343,16 @@ function dataLoaded(response){
   
   createCurse(data[0].values);   //"Curso!A1:C50",//0
   createStudents(data[1].values);//"Notas!A1:Z1000", //1
-  /*addActivities(data[2], 1, 1);  //"Q&T 1!A1:Z100", //2
-  addActivities(data[3], 1, 2);  //"Taller 1!A1:Z100", //3
-  addActivities(data[4], 1, 3);  //"Parcial 1!A1:Z100", //4
-  addActivities(data[5], 2, 1);  //"Q&T 2!A1:Z100", //5
-  addActivities(data[6], 2, 1);  //"Taller 2!A1:Z100", //6
-  addActivities(data[7], 2, 1);  //"Parcial 2!A1:Z100", //7
-  addActivities(data[8],  3, 1); //"Q&T 3!A1:Z100", //8
-  addActivities(data[9], 3, 1); //"Taller 3!A1:Z100", //9
-  addActivities(data[10], 3, 1); //"Parcial 3!A1:Z100", //10
-  */
+  addActivities(data[2].values, 1, 1);  //"Q&T 1!A1:Z100", //2
+  addActivities(data[3].values, 1, 2);  //"Taller 1!A1:Z100", //3
+  //addActivities(data[4].values, 1, 3);  //"Parcial 1!A1:Z100", //4
+  //addActivities(data[5].values, 2, 1);  //"Q&T 2!A1:Z100", //5
+  //addActivities(data[6].values, 2, 2);  //"Taller 2!A1:Z100", //6
+  //addActivities(data[7].values, 2, 3);  //"Parcial 2!A1:Z100", //7
+  //addActivities(data[8].values, 3, 1); //"Q&T 3!A1:Z100", //8
+  //addActivities(data[9].values, 3, 2); //"Taller 3!A1:Z100", //9
+  //addActivities(data[10].values,3, 3); //"Parcial 3!A1:Z100", //10
+  
   //Aquí se debe seleccionar el estudiante que inicia sesión
 }
 
@@ -372,14 +371,28 @@ function createCurse(data){
   f++;
   let average = float(data[f][1].replace(',','.')).toFixed(1);
   f++;
-  let cutsAmount = int(data[f][1]);
+  let cutsCount = int(data[f][1]);
+  
+  let titles = [];
+  for(let c = 1; c <  data[f].length; c++){
+    let t = data[f][c];
+    if(c == 1){
+      t = 'Corte';
+    }
+    titles.push(t);
+  }
   f++;
   
-  //Cargar los porcentajes de cada corte 
-  
-  
-  course = new Course(name, group, semester, teacher, maxAbsences, average);
-  
+  let cutPercentages = [];
+  for(let cut = 0; cut < cutsCount; cut++){
+    let cutInfo = [];
+    for(let c = 1; c < data[f].length; c++){
+      cutInfo.push([titles[c-1], data[f][c],]);
+    }
+    cutPercentages.push(cutInfo);
+    f++;
+  }  
+  course = new Course(name, group, semester, teacher, maxAbsences, average, cutPercentages);
 }
 
 function createStudents(data){
@@ -397,12 +410,11 @@ function createStudents(data){
     let absences = int(data[f][10]);
     let aStudent = new Student(id, names, lastnames, email, program, grade, target, absences);
     
-    for(let c = 0; c < course.cuts; c++){
+    for(let c = 0; c < course.cutPercentages.length; c++){
       let name = data[0][c+5];
       let average = data[f][c+5];
-      let percentage = course.cutPercentage[c];
+      let percentage = course.cutPercentages[c][0][1];
       let cut = new Cut(name, average, percentage);
-      console.log(cut);
       aStudent.cuts.push(cut);
     }
 
@@ -415,144 +427,64 @@ function createStudents(data){
   for(let i = 0; i < course.students.length; i++){
     course.students[i].position = i+1;
   }
+  //Y luego los vuelve a dejar como estaba, por si acaso.
   course.students.sort((a, b) => (a.lastnames+' '+a.names > b.lastnames+' '+b.names) ? 1 : -1);
   
 }
 
-//  function(response) {
-
-//  crearEstudiantes(response.result.valueRanges[0].values);
-//  agregarAusencias(response.result.valueRanges[1].values);
-
-//  for (let corte = 0; corte < 3; corte++) {
-//    for (let grupo = 0; grupo < 3; grupo++) {
-//      let hoja = 2 + ((corte*3) + grupo);
-//      agregarGrupoNotas(response.result.valueRanges[hoja].values, corte, grupo);
-//    }
-//  }
-//  statusBar += 'Estudiantes disponibles:'+dudes.length+'!\t|\t';
-//  theDude = dudes[(int)(random()*dudes.length)];
-//  statusBar += 'Estudiante cargado:'+theDude.Nombres+'!\t|\t';
-//}
-//, 
-
-//  function(reason) {
-//  
-//}
-
-//function getDude(id) {
-//  for (let d = 0; d < dudes.length; d++) {
-//    if (dudes[d].Id == id) {
-//      return dudes[d];
-//    }
-//  }
-//}
-
-//
-//function crearEstudiantes(estudiantes) { 
-//  for (let i = 1; i < estudiantes.length; i++) {
-//    dude = {
-//    [estudiantes[0][0]]: 
-//    estudiantes[i][0],
-//  };
-
-//  //Agrega el resto de datos de la primera hoja
-//  for (let k = 0; k < estudiantes[i].length; k++) { 
-//    dude[''+estudiantes[0][k]] = estudiantes[i][k];      
-//    dude.notas = [[[], [], [], ], [[], [], [], ], [[], [], [], ], ];
-//    dude.promedioGrupo = [[], [], [], ];
-//  }
-//  dudes.push(dude);
-//}
-//}
-
-
-//function agregarGrupoNotas(notas, corte, grupo) {
-
-//  let nom = 'Tareas';//Cargar desde el meta
-//  let por = '5%';
-//  if (grupo == 1) {
-//    nom = 'Taller';
-//  } else if (grupo == 2) {
-//    nom = 'Examen';
-//    por = '20%';
-//  }
-
-//  if (corte == 2) {
-//    if (grupo == 2) {
-//      por = '25%';
-//    }
-//    if (grupo == 1) {
-//      por = '10%';
-//    }
-//  }
-
-
-
-//  for (let f = 1; f < notas.length; f++) {
-//    notaGrupo = {
-//    nota: 
-//    notas[f][3], 
-//    nombre: 
-//    nom, 
-//    porcentaje: 
-//    por,
-//  };
-
-//  getDude(notas[f][0]).promedioGrupo[corte][grupo] = notaGrupo;
-
-//  let actividades = [];
-
-//  let primeraColumna = 5;
-//  if (grupo == 0) {
-//    primeraColumna = 6;
-//  }
-
-//  if (grupo != 2) {
-//    for (let c = primeraColumna; c < notas[f].length; c++) {
-//      actividad = {
-//      nombre: 
-//      notas[0][c], 
-//      nota: 
-//      notas[f][c],
-//    };
-
-//    actividades.push(actividad);
-//  }
-//} else { //Si es parcial, se muestra solo la nota global
-
-//  actividad = {
-//  nombre: 
-//  notas[0][3], 
-//  nota: 
-//  notas[f][3],
-//};
-
-//actividades.push(actividad);
-
-//}
-
-
-//getDude(notas[f][0]).notas[corte][grupo] = actividades;
-//}
-
-//}
+// cut viene de 1 a 3, group viene de 1 a 3
+function addActivities(data, cut, group){
+  
+  let firstColumn = 5;
+  if(group == 1){
+    firstColumn = 6;
+  }   
+  
+  for(let f = 1; f < data.length; f++){ 
+    
+    //Se crea cada uno de los grupos de notas
+    let gName = course.cutPercentages[cut-1][group][0];
+    let gAverage = float(data[f][3].replace(',','.')).toFixed(1);
+    let gPercentage = course.cutPercentages[cut-1][group][1]; 
+    let aGroup = new ActivityGroup(gName, gAverage, gPercentage);
+    
+    //Se crea cada una de las actividades
+    if(group != 3){
+      for(let c = firstColumn; c < data[f].length; c++){
+        let aName = data[0][c];
+        let aScore = float(data[f][c].replace(',', '.')).toFixed(1);
+        let anActivity = new Activity(aName, aScore);
+        aGroup.activities.push(anActivity);
+      }
+    } else { // si es la nota de parcial
+      let aName = course.cutPercentages[cut-1][group][0];
+      let aScore = float(data[f][3].replace(',', '.')).toFixed(1);
+      let anActivity = new Activity(aName, aScore);
+      aGroup.activities.push(anActivity);
+    }
+    
+    //Se agrega el grupo al corte respectivo.
+    
+  }
+  
+  ////Luego el corte
+}
 
 ///// Clases /////
 
 class Activity {
-  constructor() {
-    this.name = "Actividad";
-    this.score = 0.0;
+  constructor(name, score) {
+    this.name = name;
+    this.score = score;
     this.comment = "<No hay comentarios disponibles>";
   }
 }
 
 class ActivityGroup {
-  constructor() {
-    this.name = "Grupo";
-    this.average = 0.0;
-    this.percentage = 0.1;
+  constructor(name, average, percentage) {
+    this.name = name;
+    this.average = average;
+    this.percentage = percentage;
     this.activities = [];
   }
 }
@@ -567,7 +499,7 @@ class Cut {
 }
 
 class Student {
-  constructor(id, names, lastnames, email, program, grade) {
+  constructor(id, names, lastnames, email, program, grade, target, absences) {
     this.id = id;
     this.names = names;
     this.lastnames = lastnames;
@@ -575,15 +507,16 @@ class Student {
     this.program = program;
     //--//
     this.grade = grade;
-    this.absences = 0;
-    this.target = 3.0;
+    this.target = target;
+    this.absences = absences;
+    //--//
     this.position = 0;
     this.cuts = [];
   }
 }
 
 class Course {
-  constructor(name, group, semester, teacher, maxAbsences, average) {
+  constructor(name, group, semester, teacher, maxAbsences, average, cutPercentages) {
     this.name = name;
     this.group = group;
     this.semester = semester;
@@ -591,7 +524,7 @@ class Course {
     this.maxAbsences = maxAbsences;
     this.average = average;
     this.students = [];
-    this.cutPercentages = []; //Esto es un arreglo de porcentajes
+    this.cutPercentages = cutPercentages; //Esto es un arreglo de porcentajes
     this.graph = [0, 0, 0, 0, 0, 0,];
   }
 }
