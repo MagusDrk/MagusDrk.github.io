@@ -4,12 +4,14 @@ let apikey = 'AIzaSyAgebuGDMcuSoaxY5khfYeQpsX3SlzTGB8';
 let discoveryDocs = [];
 discoveryDocs.push('https://sheets.googleapis.com/$discovery/rest?version=v4');
 
-//Información auxiliar para el disujo
+//Información auxiliar para el dibujo
 let myWidth = 1366;
 let myHeight = 1000;
-let scl;
-let statusBar = "";
+let scl = 1;
+let statusBar = "Iniciando";
 let maxGroupNameWidth = 0;
+let activityIndicator;
+let activityDetail;
 
 //Información cargada
 let course;
@@ -22,6 +24,7 @@ let headerImage;
 let statsBackgroundImage;
 let cutBanner;
 let cutBackground;
+let activityBanner;
 let shield = [];
 
 //Tipografías
@@ -36,247 +39,407 @@ let grayColor = '#A0A0A0';
 let darkColor = '#142624';
 
 function preload() {
+ 
   mainFont = loadFont('assets/TimesBold.ttf');
   secondaryFont = loadFont('assets/GothamBook.ttf');
-  //  mockupImage = loadImage('assets/mockup.png');
-  //  backgroundImage = loadImage('assets/background.png');
-  //  headerImage = loadImage('assets/header.png');
-  //  statsBackground = loadImage('assets/statsBackground.png');
-  //  cutBanner = loadImage('assets/cutBanner.png');
-  //  cutBackground = loadImage('assets/cutBackground.png');
-  //  bronzeShield0 = loadImage('assets/bronzeShield0.png');
-  //  bronzeShield1 = loadImage('assets/bronzeShield1.png');
-  //  bronzeShield2 = loadImage('assets/bronzeShield2.png');
-  //  silverShield3 = loadImage('assets/silverShield3.png');
-  //  goldShield4 = loadImage('assets/goldShield4.png');
-  //  diamondShield5 = loadImage('assets/diamondShield5.png');
+  
+  mockupImage = loadImage('assets/mockup.png');
+  backgroundImage = loadImage('assets/background.png');
+  headerImage = loadImage('assets/header.png');
+  statsBackground = loadImage('assets/statsBackground.png');
+  cutBanner = loadImage('assets/cutBanner.png');
+  cutBackground = loadImage('assets/cutBackground.png');
+  activityBanner = loadImage('assets/activityBanner.png');
+  
+  for(let i = 0; i < 6; i++){
+    shield[i] = loadImage('assets/shield'+i+'.png');
+  }
 }
 
 
 function setup() {
-  //  updateScale();
-  //  createCanvas(windowWidth, myHeight*scl);
+  updateScale();
+  createCanvas(windowWidth, myHeight*scl);
 }
 
-
 function draw() {
-  //  scale(scl);
-  //  smooth();
-  //  background(255, 255, 200);
+  scale(scl);
+  smooth();
+  background(255, 255, 200);
 
-  //  imageMode(CORNER);
-
-  //  image(mockupImage, 0, 0);
-  //  image(backgroundImage, 0, 0);
-
-  //  drawHeader();
-  //  drawStats();
-  //  drawCut(1, 372, 180);
-  //  drawCut(2, 372, 454);
-  //  drawCut(3, 372, 728);
-
+  drawBackground();
+  drawHeader();
+  drawStats();
+  
+  activityIndicator = undefined;
+  
+  drawCut(0, 372, 180);
+  drawCut(1, 372, 454);
+  drawCut(2, 372, 728);
+  
+  if(activityIndicator){
+    activityIndicator.display();
+  }
+  
+  if(activityDetail){
+    activityDetail.display();
+  }
+  
   displayStatusBar();
 }
 
-//function drawHeader() {
-//  image(headerImage, 0, 0);
-//  textAlign(LEFT, BASELINE);
-//  noStroke();
-//  textFont(mainFont);
-//  textSize(40);
-//  fill(darkColor);
-//  text(className, 40, 67);
-//  let xSem = 40+textWidth(className);
-//  textSize(25);
-//  text(' / '+semester, xSem, 67);
-//  if (theDude) {
-//    textFont(secondaryFont);
-//    textSize(24);
-//    text(theDude.Nombres+' '+theDude.Apellidos, 40, 96);
-//    textSize(16);
-//    text(theDude.Id, 40, 115);
-//  }
-//}
+function drawBackground(){
+  imageMode(CORNER);
+  image(mockupImage, 0, 0);
+  image(backgroundImage, 0, 0);
+}
 
-//function drawStats() {
+function drawHeader() {
+  
+  image(headerImage, 0, 0);
+  if(course){
+    textAlign(LEFT, BASELINE);
+    noStroke();
+    textFont(mainFont);
+    textSize(40);
+    fill(darkColor);
+    text(course.name, 40, 67);
+    let xSem = 40+textWidth(course.name);
+    textSize(25);
+    text(' / '+course.semester, xSem, 67);
+  }
+  if (student) {
+    textFont(secondaryFont);
+    textSize(24);
+    text(student.names+' '+student.lastnames, 40, 96);
+    textSize(16);
+    text(student.id, 40, 115);
+  }
+}
 
-//  //Dibuja la insignia
+function drawStats() {
 
-//  image(statsBackground, 40, 180);
-//  if (theDude) {
+  image(statsBackground, 40, 180);
+  
+  if (student) {
 
-//    let grade = float(theDude['Nota Final'].replace(',', '.'));
-//    let shield = getShield(grade);
-//    image(shield, 64, 230, shield.width*0.5, shield.height*0.5);
-//    textFont(mainFont);
-//    textSize(30);
-//    textAlign(CENTER, BASELINE);
-//    text(grade.toFixed(1), 186, 405); // 405
+    //Dibuja el escudo
+    let grade = student.grade;
+    let theShield = shield[int(grade)];
+    image(theShield, 64, 200, theShield.width*0.5, theShield.height*0.5);
+    textFont(mainFont);
+    textSize(30);
+    textAlign(CENTER, BASELINE);
+    text(float(grade).toFixed(1), 186, 375);
 
-//    // Indicador de progreso del escudo
-//    stroke(getGradeColor(grade));
-//    strokeWeight(3);
-//    noFill();
-//    let sAng = 150;
-//    let maxAng = 390;
-//    let angs = maxAng-sAng;
-//    let per = grade/5.0;
-//    arc(186, 400-5, 82, 82, radians(sAng), radians(sAng + (angs*per)));
-//  }
-//}
+    // Indicador de progreso del escudo
+    stroke(getGradeColor(grade));
+    strokeWeight(3);
+    noFill();
+    let sAng = 150;
+    let maxAng = 390;
+    let angs = maxAng-sAng;
+    let per = grade/5.0;
+    arc(186, 365, 82, 82, radians(sAng), radians(sAng + (angs*per)));
+    
+    //Indicador de liga
+    let nextLeague = getGradeLeagueName(int(student.grade) + 1);
+    let min = int(student.grade);
+    let max = min+1;
+    
+    if(student.grade >= 5){
+      min = 4;
+      max =5;
+    }
+    
+    drawIndicator(nextLeague, student.grade, min, max, 60, 488, 251, 12);
+    
+    //indicador de meta
+    drawIndicator('la meta', student.grade, 0, student.target, 60, 582, 251, 12);
+    
+    //Contador de ausencias
+    drawLivesIndicator(60, 660, 251, 50, course.maxAbsences, course.maxAbsences-student.absences);
+    
+    //Indicador de puesto en el curso.
+    drawPositionIndicator(60, 780, 251, 100, course.graph, student.grade, student.position, course.students.length);
+    
+  }
+}
 
-//function drawCut(cut, x, y) {
+function drawPositionIndicator(x, y, w, h, data, curr, pos, rel){
+  
+  //Grafica de distribución
+  let sep = w / (data.length-1);
+  noStroke();
+  fill(mainColor);
+  beginShape();
+  curveVertex(x, y+h);
+  curveVertex(x, y+h);
+  for(let i = 0; i < data.length; i++){
+    vertex(x+(i*sep), y+h-(h*(data[i]/max(data))));
+  }
+  curveVertex(x+w, y+h);
+  curveVertex(x+w, y+h);
+  endShape();
+  
+  stroke(mainColor);
+  strokeWeight(3);
+  line(x, y+h, x+w, y+h);
+  
+  //posición de la nota
+  stroke(highlightColor);
+  strokeWeight(3);
+  let px = map(curr, 0, 5, 0, w);
+  line(x+px, y-2, x+px, y+h+2);
+  
+  //Indicadores del grafico
+  for(let i = 0; i < data.length; i++){
+    strokeWeight(1);
+    stroke(ligthColor);
+    let theX = x+(i*sep); 
+    
+    //line(theX, theY, theX, y+h);
+    noStroke();
+    fill(darkColor);
+    textSize(15);
+    textAlign(CENTER, BOTTOM);
+    text(float(i).toFixed(1), theX, y+h+20);
+  }
 
-//  image(cutBanner, x, y);
-//  image(cutBackground, x+194, y);
-//  textAlign(CENTER, BASELINE);
-//  textFont(mainFont);
-//  textSize(30);
-//  noStroke();
-//  fill(ligthColor);
-//  text('Corte '+cut, x+88, y+60);
+  //Información del puesto
+  noStroke();
+  fill(darkColor);
+  textAlign(LEFT, BASELINE);
+  textSize(20);
+  text('Puesto', x, y+20);
+  text(pos, x, y+40);
+  let msgWidth = textWidth(pos+'');
+  textSize(15);
+  text('/'+rel, x+msgWidth, y+40);
+}
 
-//  if (theDude) {
-//    let cutGrade = float(theDude['Corte '+cut].replace(',', '.'));
-//    textSize(50);
-//    text(cutGrade.toFixed(1), x+88, y+118);
-//    textFont(secondaryFont);
-//    textSize(20);
+function drawLivesIndicator(x, y, w, h, max, curr){
+  
+  let unitMargin = 5;
+  let unitW = w / max;
+  
+  for(let i = 0; i < max; i++){
+    let full = 0;
+    if(i < curr){
+      full = 1;
+    }
+    progressBar(x + (unitW)*i, y, unitW-unitMargin, h, 'horizontal', full);
+  }
+  
+  textFont(secondaryFont);
+  textSize(20);
+  noStroke();
+  fill(darkColor); 
+  textAlign(RIGHT, BASELINE);
+  if(curr >= 0){
+    text('Te queda'+((curr>1)?'n':'')+' '+curr+' vida'+((curr>1)?'s':'')+'', x+w, y+h+20);
+  } else {
+    text('Game Over ('+curr+')', x+w, y+h+20);
+  }
+  
+}
 
-//    //Cargar desde el meta del archivo
-//    let per = "30%";
-//    if (cut == 3) {
-//      per = "40%";
-//    }
+function drawIndicator(name, curr, min, max, x, y, w, h){
 
-//    text(per, x+88, y+158);
+    min = float(min).toFixed(1);
+    max = float(max).toFixed(1);
+    textFont(secondaryFont);
+    textSize(20);
+    noStroke();
+    fill(darkColor);  
+    textAlign(LEFT, BASELINE);
+    text(min, x, y - 5);
+    textAlign(RIGHT, BASELINE);
+    text(max, x+w, y - 5);
+    
+    let fulfillment = map(curr, min, max, 0, 1);//curr - min;
+    progressBar(x, y, w, h, 'horizontal', fulfillment);
+    
+    fill(darkColor);
+    noStroke(0);
+  
+    let missing = max - curr;
+    if(missing >= 0){  
+      text(missing.toFixed(1)+' para '+name, x+w, y+h+20);
+    } else {
+      text('pasaste '+name+ ' por '+(-missing.toFixed(1)), x+w, y+h+20);
+    }
+}
 
-//    drawGroup(cut, 1, x+216, y+20);
-//    drawGroup(cut, 2, x+216, y+88);
-//    drawGroup(cut, 3, x+216, y+156);
-//  }
-//}
+function progressBar(x, y, w, h, direction, p, m){
+  
+  //Area para mostrar
+  rectMode(CENTER);
+  noFill();
+  stroke(0, 8);
+  let thick = 5;
+  for (let i = thick; i > 0; i--) {
+    strokeWeight(thick-i);
+    rect(x + (w/2), y + (h/2), w-thick+i, h-thick+i, 3);
+  }
+  noStroke();
+  fill(0, 16);
+  rectMode(CORNER);
+  rect(x, y, w, h, 3);
+  
+  //Variables de estilo adicional
+  let exceeded = false;
+  let missed = false;
+    
+  if(p > 1){
+    p = 1;
+    exceeded = true;
+  } else if (p < m){
+    missed = true;
+  }
+  
+  let myColor = mainColor;
+  
+  //formatos previos
+  if(exceeded){ //Poner un estilo si ya se pasó
+  } else if(missed){ //poner otro estilo si ha faltado
+    myColor = highlightColor;
+  }
+  
+  //Area para rellenar
+  fill(myColor);
+  noStroke();
+  if(direction == 'horizontal'){
+    rect(x, y, w*p, h, 3);
+  } else if(direction == 'vertical'){
+    rect(x, y + (h*(1-p)), w, h*p, 3);
+  }
+  
+  //formatos posteriores
+  if(exceeded){ //Poner un estilo si ya se pasó
+    stroke('#00D0D0');
+    strokeWeight(2);
+    rect(x, y, w, h, 3);
+  } else if(missed){ //poner otro estilo si ha faltado
+    
+  }
+  
+}
 
-//function drawGroup(cut, group, x, y) {
-//  fill(darkColor);
-//  noStroke();
-//  textAlign(LEFT, BASELINE);
-//  textSize(30);
-//  text(theDude.promedioGrupo[cut-1][group-1].nota.replace(',', '.'), x, y+26);
-//  let groupName = theDude.promedioGrupo[cut-1][group-1].nombre;
-//  text(groupName, x+64, y+26);
+//cut viene desde 0
+function drawCut(cutIndex, x, y) {
 
-//  let groupNameWidth = textWidth(groupName);
-//  if (groupNameWidth > maxGroupNameWidth) {
-//    maxGroupNameWidth = groupNameWidth;
-//  }
+  image(cutBanner, x, y);
+  image(cutBackground, x+194, y);
+  textAlign(CENTER, BASELINE);
+  textFont(mainFont);
+  textSize(30);
+  noStroke();
+  
+  if(student){
+    
+    let theCut = student.cuts[cutIndex];
+    
+    fill(ligthColor);
+    text(theCut.name, x+88, y+60);
+  
+    textSize(50);
+    text(theCut.average, x+88, y+118);
+    
+    textFont(secondaryFont);
+    textSize(20);
+    text(theCut.percentage, x+88, y+158);
+  
+    drawGroup(cutIndex, 0, x+216, y+20);
+    drawGroup(cutIndex, 1, x+216, y+88);
+    drawGroup(cutIndex, 2, x+216, y+156);
+  }
+}
 
-//  textSize(20);
-//  text(theDude.promedioGrupo[cut-1][group-1].porcentaje, x+64, y+54);
+//cut y group vienen desde 0
+function drawGroup(cutIndex, groupIndex, x, y) {
+  
+  let theGroup = student.cuts[cutIndex].groups[groupIndex];
+  
+  fill(darkColor);
+  noStroke();
+  textAlign(LEFT, BASELINE);
+  textSize(30);
+  text(theGroup.average, x, y+26);
+  text(theGroup.name, x+64, y+26);
 
-//  stroke(0);
-//  strokeWeight(1);
-//  noFill();
+  let groupNameWidth = textWidth(theGroup.name);
+  if (groupNameWidth > maxGroupNameWidth) {
+    maxGroupNameWidth = groupNameWidth;
+  }
 
-//  let firstX = x + 64 + maxGroupNameWidth + 20; 
+  textSize(20);
+  text(theGroup.percentage, x+64, y+54);
 
-//  //Dibuja cada cuadro de nota
-//  let notes = theDude.notas[cut-1][group-1].length;
-//  for (let n = 0; n < notes; n++) {
+  //Dibuja cada cuadro de nota
+  let firstX = x + 64 + maxGroupNameWidth + 20; 
+  for (let n = 0; n < theGroup.activities.length; n++) {
+    drawActivity(cutIndex, groupIndex, n, firstX + (45*n), y);
+  }
+  firstX += 45;
+  
+}
 
-//    //Muestra la nota
-//    noStroke();
-//    fill(darkColor);
-//    textAlign(CENTER, BASELINE);
-//    textSize(14);
-//    let note = float(theDude.notas[cut-1][group-1][n].nota.replace(',', '.'));
-//    text(note.toFixed(1), firstX + 20, y + 54);
+function drawActivity(cutIndex, groupIndex, actIndex, x, y){
+    
+  //Muestra la nota
+  noStroke();
+  fill(darkColor);
+  textAlign(CENTER, BASELINE);
+  textSize(14);
+  let note = student.cuts[cutIndex].groups[groupIndex].activities[actIndex];
+  text(note.score, x + 20, y + 54);
+  
+  let per = note.score/5.0;
+  progressBar(x, y, 40, 40, 'vertical', per, 0.6);
 
-//    //Prepara la caja de mostrar
-//    rectMode(CENTER);
-//    noFill();
-//    stroke(0, 8);
-//    let wid = 5;
-//    for (let i = wid; i > 0; i--) {
-//      strokeWeight(wid-i);
-//      rect(firstX + 20, y + 20, 40-wid+i, 40-wid+i, 3);
-//    }
-//    noStroke();
-//    fill(0, 16);
-//    rectMode(CORNER);
-//    rect(firstX, y, 40, 40, 3);
+  if((mouseX/scl) >= x && (mouseX/scl) <= x+40 && (mouseY/scl) >= y && (mouseY/scl) <= y+40){
+    activityIndicator = new ClickIndicator(x, y, 40, 40, ['Activity', cutIndex, groupIndex, actIndex,]);
+  }
 
-//    //Rellena la caja
-//    let per = note/5;
-//    let alt = 40*per;
-//    let gradeY = y + 40 - alt;
-//    if (note >= 3) {
-//      fill(mainColor);
-//    } else {
-//      fill(highlightColor);//194, 133, 102);
-//    }
-//    noStroke();
-//    rect(firstX, gradeY, 40, alt, 3);
+}
 
-//    /* strokeWeight(1);
-//     stroke(highlightColor);
-//     line(firstX-3, y + 40 - (40*0.6), firstX+43, y + 40 - (40*0.6));
-//     */
-//    //Ilumina la caja seleccionada
-//    if (mouseX >= firstX && mouseX <= firstX+40 && mouseY >= y && mouseY <= y + 40) {
-//      strokeWeight(1);
-//      stroke(highlightColor);
-//      noFill();
-//      rect(firstX, y, 40, 40, 3);
-//    }
+function getGradeColor(val) {
+  
+  if(val >= 5.0){
+    return '#00D0D0';
+  } else if(val >= 4.0){
+    return '#00D000';
+  } else if(val >= 3.0){
+    return '#FFD000';
+  } else {
+    return '#D00000';
+  }
+}
 
-//    firstX += 45;
-//  }
-//}
+function getGradeLeagueName(val){
+  if(val >= 5.0){
+    return 'Diamante';
+  } else if(val >= 4.0){
+    return 'Oro';
+  } else if(val >= 3.0){
+    return 'Plata';
+  } else {
+    return 'Bronce';
+  }
+}
 
-//function getShield(val) {
+function updateScale() {
+  scl = windowWidth/myWidth;
+}
 
-//  if (val < 1) {
-//    return bronzeShield0;
-//  } else if (val < 1) {
-//    return bronzeShield1;
-//  } else if (val < 3) {
-//    return bronzeShield2;
-//  } else if (val < 4) {
-//    return silverShield3;
-//  } else if (val < 5) {
-//    return goldShield4;
-//  } else if (val >= 5) {
-//    return diamondShield5;
-//  }
-//  return bronzeShield0;
-//}
-
-//function getGradeColor(val) {
-
-//  if (val < 3) {
-//    return '#D00000';
-//  } else if (val < 4) {
-//    return '#FFD000';
-//  } else if (val < 5) {
-//    return '#00D000';
-//  } else if (val >= 5) {
-//    return '#00D0D0';
-//  }
-//}
-
-
-//function windowResized() {
-//  updateScale();
-//  resizeCanvas(windowWidth, myHeight*scl);
-//}
-
-//function updateScale() {
-//  scl = windowWidth/myWidth;
-//}
+function windowResized() {
+  updateScale();
+  resizeCanvas(windowWidth, myHeight*scl);
+}
 
 function addToStatusBar(message) {
-  this.statusBar += message;
+  statusBar += '\t|\t'+message;
 }
 
 function displayStatusBar() {
@@ -291,18 +454,18 @@ function displayStatusBar() {
 //////////// Metodos de la API de consulta //////////
 
 function apiLoaded() {
-  addToStatusBar('Api cargada!\t|\t');
+  addToStatusBar('Api cargada!');
   gapi.load('client:auth2', initClient);
 }
 
 function initClient() {
-  addToStatusBar('Cliente cargado!\t|\t');
+  addToStatusBar('Cliente cargado!');
   gapi.client.init({
     'apiKey': apikey, 
     'discoveryDocs': discoveryDocs,
   }).then(
     function() {
-      addToStatusBar('Cliente iniciado!\t|\t');
+      addToStatusBar('Cliente iniciado!');
       loadData();
     }
   );
@@ -330,10 +493,10 @@ function loadData() {
   //Ejecuta la consulta
   var request = gapi.client.sheets.spreadsheets.values.batchGet(params);
   request.then(function(response) {
-    addToStatusBar('datos cargados!\t|\t');
+    addToStatusBar('datos cargados!');
     dataLoaded(response);
   }, function(reason) {
-    addToStatusBar('error: ' + reason.result.error.message+'\t|\t');
+    addToStatusBar('error: ' + reason.result.error.message);
   });
 }
 
@@ -345,36 +508,33 @@ function dataLoaded(response){
   createStudents(data[1].values);//"Notas!A1:Z1000", //1
   addActivities(data[2].values, 1, 1);  //"Q&T 1!A1:Z100", //2
   addActivities(data[3].values, 1, 2);  //"Taller 1!A1:Z100", //3
-  //addActivities(data[4].values, 1, 3);  //"Parcial 1!A1:Z100", //4
-  //addActivities(data[5].values, 2, 1);  //"Q&T 2!A1:Z100", //5
-  //addActivities(data[6].values, 2, 2);  //"Taller 2!A1:Z100", //6
-  //addActivities(data[7].values, 2, 3);  //"Parcial 2!A1:Z100", //7
-  //addActivities(data[8].values, 3, 1); //"Q&T 3!A1:Z100", //8
-  //addActivities(data[9].values, 3, 2); //"Taller 3!A1:Z100", //9
-  //addActivities(data[10].values,3, 3); //"Parcial 3!A1:Z100", //10
+  addActivities(data[4].values, 1, 3);  //"Parcial 1!A1:Z100", //4
+  addActivities(data[5].values, 2, 1);  //"Q&T 2!A1:Z100", //5
+  addActivities(data[6].values, 2, 2);  //"Taller 2!A1:Z100", //6
+  addActivities(data[7].values, 2, 3);  //"Parcial 2!A1:Z100", //7
+  addActivities(data[8].values, 3, 1); //"Q&T 3!A1:Z100", //8
+  addActivities(data[9].values, 3, 2); //"Taller 3!A1:Z100", //9
+  addActivities(data[10].values,3, 3); //"Parcial 3!A1:Z100", //10
   
   //Aquí se debe seleccionar el estudiante que inicia sesión
+  student = course.students[int(random(course.students.length))];//course.students[random(course.students.length)];
+  addToStatusBar('Estudiante cargado!');
+  //Pendiente eliminar los otros estudiantes.
 }
 
 function createCurse(data){
   
-  let f = 0;
-  let name = data[f][0];
-  f++;
-  let group = data[f][1];
-  f++;
-  let semester = data[f][1];
-  f++;
-  let teacher = data[f][1];
-  f++;
-  let maxAbsences = int(data[f][1]);
-  f++;
-  let average = float(data[f][1].replace(',','.')).toFixed(1);
-  f++;
-  let cutsCount = int(data[f][1]);
+  let name = data[0][0];
+  let group = data[1][1];
+  let semester = data[2][1];
+  let teacher = data[3][1];
+  let maxAbsences = int(data[4][1]);
+  let average = float(data[5][1].replace(',','.')).toFixed(1);
+  let cutsCount = int(data[6][1]);
   
+  let f = 6;
   let titles = [];
-  for(let c = 1; c <  data[f].length; c++){
+  for(let c = 1; c < data[f].length; c++){
     let t = data[f][c];
     if(c == 1){
       t = 'Corte';
@@ -412,7 +572,7 @@ function createStudents(data){
     
     for(let c = 0; c < course.cutPercentages.length; c++){
       let name = data[0][c+5];
-      let average = data[f][c+5];
+      let average = float(data[f][c+5].replace(',', '.')).toFixed(1);
       let percentage = course.cutPercentages[c][0][1];
       let cut = new Cut(name, average, percentage);
       aStudent.cuts.push(cut);
@@ -429,7 +589,6 @@ function createStudents(data){
   }
   //Y luego los vuelve a dejar como estaba, por si acaso.
   course.students.sort((a, b) => (a.lastnames+' '+a.names > b.lastnames+' '+b.names) ? 1 : -1);
-  
 }
 
 // cut viene de 1 a 3, group viene de 1 a 3
@@ -463,11 +622,20 @@ function addActivities(data, cut, group){
       aGroup.activities.push(anActivity);
     }
     
-    //Se agrega el grupo al corte respectivo.
+    //Se pone el % de cada actividad del grupo
+    let gPerFloat = float(aGroup.percentage.replace('%', '')/100); 
+    let indPer = gPerFloat/aGroup.activities.length;
+    indPer = (indPer*100).toFixed(2);
     
+    let individualPercentage = indPer+'%';
+    for(let a = 0; a < aGroup.activities.length; a++){
+      aGroup.activities[a].percentage = individualPercentage;
+    }
+    
+    //Se agrega el grupo al corte respectivo.
+    let studentId = data[f][0];
+    course.getStudent(studentId).cuts[cut-1].groups.push(aGroup); 
   }
-  
-  ////Luego el corte
 }
 
 ///// Clases /////
@@ -477,6 +645,7 @@ class Activity {
     this.name = name;
     this.score = score;
     this.comment = "<No hay comentarios disponibles>";
+    this.percentage = 0.0;
   }
 }
 
@@ -526,5 +695,115 @@ class Course {
     this.students = [];
     this.cutPercentages = cutPercentages; //Esto es un arreglo de porcentajes
     this.graph = [0, 0, 0, 0, 0, 0,];
+  }
+  
+  getStudent(studentId){
+    for(let s = 0; s < this.students.length; s++){
+      if(this.students[s].id == studentId){
+        return this.students[s];
+      }
+    }
+  }
+}
+
+// Clases gráficas //
+class ClickIndicator{
+  constructor(x, y, w, h, data){
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.data = data;
+  }
+  
+  display(){
+    noFill();
+    strokeWeight(3);
+    stroke(highlightColor);
+    rect(this.x, this.y, this.w, this.h, 3);
+  }
+}
+
+class ActivityDetail{
+  constructor(x, y, activity){
+    this.x = x;
+    this.y = y;
+    this.xi = x;
+    this.yi = y;
+    this.activity = activity;
+    this.myColor = mainColor;
+  }
+  
+  display(){
+    
+    if(this.x + activityBanner.width > myWidth){
+      this.x = myWidth - activityBanner.width;
+    }
+    
+    if(this.y + activityBanner.height > myHeight){
+      this.y = myHeight - activityBanner.height;
+      this.myColor = ligthColor;
+    }
+    
+    image(activityBanner, this.x+20, this.y);
+    
+    
+    
+    fill(this.myColor);
+    stroke('#ff9933');
+    strokeWeight(5);
+    beginShape();
+    vertex(this.xi+22, this.yi+2.5);
+    vertex(this.xi, this.yi+10.5);
+    vertex(this.xi+22, this.yi+18.5);
+    endShape();
+    
+    fill(darkColor);
+    textFont(mainFont);
+    noStroke();
+    textSize(20);
+    textAlign(CENTER, BASELINE);
+    let myCenterX = this.x + 120;
+    
+    text(this.activity.name, this.x+30, this.y+30, 185, 25);
+    
+    textFont(secondaryFont);
+    textSize(16);
+    text(this.activity.score + '\t\t' + this.activity.percentage, myCenterX, this.y+80);
+    let perWidth = textWidth(this.activity.score);
+    
+    //text(' / '+this.activity.percentage, this.x+30+perWidth, this.y+80);
+    textSize(14);
+    text(this.activity.comment, this.x+30, this.y+90+20, 180, 100);
+    /*
+    
+    rect(this.x, this.y, 100, 100);
+    fill(darkColor);
+    
+    
+    
+    
+    text(this.activity.percentage, this.x+10, this.y+60);
+    text(this.activity.comment, this.x+10, this.y+80, 80, 50);*/
+  }
+}
+
+// Eventos //
+
+function mouseClicked(){
+  
+  if(activityIndicator){
+    let x = activityIndicator.x;
+    let y = activityIndicator.y;
+    let w = activityIndicator.w;
+    let c = activityIndicator.data[1];
+    let g = activityIndicator.data[2];
+    let a = activityIndicator.data[3];
+    let activity = student.cuts[c].groups[g].activities[a];
+    
+    activityDetail = new ActivityDetail(x + w, y, activity);
+ 
+  } else {
+    activityDetail = null;
   }
 }
