@@ -13,6 +13,11 @@ let maxGroupNameWidth = 0;
 let activityIndicator;
 let activityDetail;
 
+//DOM para login
+let idInput;
+let loginButton;
+let logoutButton;
+
 //Información cargada
 let course;
 let student;
@@ -25,6 +30,7 @@ let statsBackgroundImage;
 let cutBanner;
 let cutBackground;
 let activityBanner;
+let welcomeBanner;
 let shield = [];
 
 //Tipografías
@@ -50,6 +56,7 @@ function preload() {
   cutBanner = loadImage('assets/cutBanner.png');
   cutBackground = loadImage('assets/cutBackground.png');
   activityBanner = loadImage('assets/activityBanner.png');
+  welcomeBanner = loadImage('assets/welcomeBanner.png');
   
   for(let i = 0; i < 6; i++){
     shield[i] = loadImage('assets/shield'+i+'.png');
@@ -60,6 +67,17 @@ function preload() {
 function setup() {
   updateScale();
   createCanvas(windowWidth, myHeight*scl);
+  
+  idInput = createInput();
+  idInput.hide();
+  
+  loginButton = createButton('Ingresar');
+  loginButton.mousePressed(studentLogin);
+  loginButton.hide();
+  
+  logoutButton = createButton('Salir');
+  logoutButton.mousePressed(studentLogout);
+  logoutButton.hide();
 }
 
 function draw() {
@@ -68,21 +86,50 @@ function draw() {
   background(255, 255, 200);
 
   drawBackground();
-  drawHeader();
-  drawStats();
   
-  activityIndicator = undefined;
+  if(student){
+    drawHeader();
+    drawStats();
   
-  drawCut(0, 372, 180);
-  drawCut(1, 372, 454);
-  drawCut(2, 372, 728);
-  
-  if(activityIndicator){
-    activityIndicator.display();
-  }
-  
-  if(activityDetail){
-    activityDetail.display();
+    activityIndicator = undefined;
+    
+    drawCut(0, 372, 180);
+    drawCut(1, 372, 454);
+    drawCut(2, 372, 728);
+    
+    if(activityIndicator){
+      activityIndicator.display();
+    }
+    
+    if(activityDetail){
+      activityDetail.display();
+    }
+  } else {
+    
+    let cx = myWidth/2;
+    let cy = myHeight/3;
+    
+    imageMode(CENTER);
+    image(welcomeBanner, cx, cy);
+    textFont(mainFont);
+    fill(darkColor);
+    textAlign(CENTER, BASELINE);
+    
+    textSize(20);
+    text("Bienvenido", cx, cy - 100);
+    
+    textSize(30);
+    text("Consulta de notas", cx, cy - 70);
+    
+    textFont(secondaryFont);
+    textSize(16);
+    text("Ingrese su código para consultar sus notas", cx - 100, cy - 30, 200, 200);
+    
+    idInput.show();
+    idInput.position(cx - idInput.width/2, cy+20);
+    loginButton.show();
+    loginButton.position(cx - loginButton.width/2, cy + 50);
+     
   }
   
   displayStatusBar();
@@ -95,7 +142,7 @@ function drawBackground(){
 }
 
 function drawHeader() {
-  
+  imageMode(CORNER);
   image(headerImage, 0, 0);
   if(course){
     textAlign(LEFT, BASELINE);
@@ -114,11 +161,15 @@ function drawHeader() {
     text(student.names+' '+student.lastnames, 40, 96);
     textSize(16);
     text(student.id, 40, 115);
+    
+    logoutButton.show();
+    logoutButton.position(myWidth-100, headerImage.height/3);
+    
   }
 }
 
 function drawStats() {
-
+  imageMode(CORNER);
   image(statsBackground, 40, 180);
   
   if (student) {
@@ -130,6 +181,7 @@ function drawStats() {
     textFont(mainFont);
     textSize(30);
     textAlign(CENTER, BASELINE);
+    fill(darkColor);
     text(float(grade).toFixed(1), 186, 375);
 
     // Indicador de progreso del escudo
@@ -328,7 +380,7 @@ function progressBar(x, y, w, h, direction, p, m){
 
 //cut viene desde 0
 function drawCut(cutIndex, x, y) {
-
+  imageMode(CORNER);
   image(cutBanner, x, y);
   image(cutBackground, x+194, y);
   textAlign(CENTER, BASELINE);
@@ -515,11 +567,6 @@ function dataLoaded(response){
   addActivities(data[8].values, 3, 1); //"Q&T 3!A1:Z100", //8
   addActivities(data[9].values, 3, 2); //"Taller 3!A1:Z100", //9
   addActivities(data[10].values,3, 3); //"Parcial 3!A1:Z100", //10
-  
-  //Aquí se debe seleccionar el estudiante que inicia sesión
-  student = course.students[int(random(course.students.length))];//course.students[random(course.students.length)];
-  addToStatusBar('Estudiante cargado!');
-  //Pendiente eliminar los otros estudiantes.
 }
 
 function createCurse(data){
@@ -747,8 +794,6 @@ class ActivityDetail{
     
     image(activityBanner, this.x+20, this.y);
     
-    
-    
     fill(this.myColor);
     stroke('#ff9933');
     strokeWeight(5);
@@ -772,19 +817,8 @@ class ActivityDetail{
     text(this.activity.score + '\t\t' + this.activity.percentage, myCenterX, this.y+80);
     let perWidth = textWidth(this.activity.score);
     
-    //text(' / '+this.activity.percentage, this.x+30+perWidth, this.y+80);
     textSize(14);
     text(this.activity.comment, this.x+30, this.y+90+20, 180, 100);
-    /*
-    
-    rect(this.x, this.y, 100, 100);
-    fill(darkColor);
-    
-    
-    
-    
-    text(this.activity.percentage, this.x+10, this.y+60);
-    text(this.activity.comment, this.x+10, this.y+80, 80, 50);*/
   }
 }
 
@@ -806,4 +840,22 @@ function mouseClicked(){
   } else {
     activityDetail = null;
   }
+}
+
+function studentLogin(){
+  let id = idInput.value();
+  
+  if(id == 'DEMOUNIR'){
+    student = course.students[int(random(course.students.length))];
+  } else {
+    student = course.getStudent(id);
+  }
+  idInput.value(''); 
+  idInput.hide();
+  loginButton.hide();
+}
+
+function studentLogout(){
+  logoutButton.hide();
+  student = null;
 }
