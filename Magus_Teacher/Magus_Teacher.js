@@ -850,9 +850,14 @@ function studentLogin(){
   } else {
     student = course.getStudent(id);
   }
+  
+  
+  
   idInput.value(''); 
   idInput.hide();
   loginButton.hide();
+  
+  
 }
 
 function studentLogout(){
