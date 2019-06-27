@@ -30,7 +30,8 @@ let statsBackgroundImage;
 let cutBanner;
 let cutBackground;
 let activityBanner;
-let welcomeBanner;
+let welcomeBannerD;
+let welcomeBannerM;
 let shield = [];
 
 //Tipografías
@@ -56,7 +57,8 @@ function preload() {
   cutBanner = loadImage('assets/cutBanner.png');
   cutBackground = loadImage('assets/cutBackground.png');
   activityBanner = loadImage('assets/activityBanner.png');
-  welcomeBanner = loadImage('assets/welcomeBanner.png');
+  welcomeBannerD = loadImage('assets/welcomeBannerD.png');
+  welcomeBannerM = loadImage('assets/welcomeBannerM.png');
   
   for(let i = 0; i < 6; i++){
     shield[i] = loadImage('assets/shield'+i+'.png');
@@ -108,28 +110,44 @@ function draw() {
     
     let cx = myWidth/2;
     let cy = myHeight/3;
-    
-    imageMode(CENTER);
-    image(welcomeBanner, cx, cy);
-    textFont(mainFont);
-    fill(darkColor);
-    textAlign(CENTER, BASELINE);
-    
-    textSize(20);
-    text("Bienvenido", cx, cy - 100);
-    
-    textSize(30);
-    text("Consulta de notas", cx, cy - 70);
-    
-    textFont(secondaryFont);
-    textSize(16);
-    text("Ingrese su código para consultar sus notas", cx - 100, cy - 30, 200, 200);
+    if(isMobileDevice()){
+      imageMode(CENTER);
+      image(welcomeBannerM, cx, cy);
+      textFont(mainFont);
+      fill(darkColor);
+      textAlign(CENTER, BASELINE);
+      
+      textSize(30);
+      text("Bienvenido", cx, cy - 150);
+      
+      textSize(50);
+      text("Consulta de notas", cx, cy - 80);
+      
+      textFont(secondaryFont);
+      textSize(20);
+      text("Ingrese su código para consultar sus notas", cx - 200, cy - 30, 400, 200);
+    } else {
+      imageMode(CENTER);
+      image(welcomeBannerD, cx, cy);
+      textFont(mainFont);
+      fill(darkColor);
+      textAlign(CENTER, BASELINE);
+      
+      textSize(20);
+      text("Bienvenido", cx, cy - 90);
+      
+      textSize(30);
+      text("Consulta de notas", cx, cy - 50);
+      
+      textFont(secondaryFont);
+      textSize(16);
+      text("Ingrese su código para consultar sus notas", cx - 200, cy - 10, 400, 200); 
+    }
     
     idInput.show();
     idInput.position((cx*scl) - idInput.width/2, (cy+20)*scl);
     loginButton.show();
     loginButton.position((cx*scl) - loginButton.width/2, (cy*scl)+50);
-     
   }
   
   displayStatusBar();
@@ -859,4 +877,8 @@ function studentLogin(){
 function studentLogout(){
   logoutButton.hide();
   student = null;
+}
+
+function isMobileDevice() {
+    return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
 }
