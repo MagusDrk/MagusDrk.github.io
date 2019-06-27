@@ -126,9 +126,9 @@ function draw() {
     text("Ingrese su código para consultar sus notas", cx - 100, cy - 30, 200, 200);
     
     idInput.show();
-    idInput.position(cx - idInput.width/2, cy+20);
+    idInput.position((cx*scl) - idInput.width/2, (cy+20)*scl);
     loginButton.show();
-    loginButton.position(cx - loginButton.width/2, cy + 50);
+    loginButton.position((cx*scl) - loginButton.width/2, (cy*scl)+50);
      
   }
   
@@ -163,7 +163,7 @@ function drawHeader() {
     text(student.id, 40, 115);
     
     logoutButton.show();
-    logoutButton.position(myWidth-100, headerImage.height/3);
+    logoutButton.position((myWidth-40)*scl - (logoutButton.width), (headerImage.height/2)*scl - logoutButton.height/2);
     
   }
 }
@@ -850,14 +850,10 @@ function studentLogin(){
   } else {
     student = course.getStudent(id);
   }
-  
-  
-  
+   
   idInput.value(''); 
   idInput.hide();
   loginButton.hide();
-  
-  
 }
 
 function studentLogout(){
