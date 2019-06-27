@@ -83,6 +83,7 @@ function setup() {
 }
 
 function draw() {
+  updateScale();
   scale(scl);
   smooth();
   background(255, 255, 200);
@@ -110,19 +111,17 @@ function draw() {
     
     let cx = myWidth/2;
     let cy = myHeight/3;
+    
     if(isMobileDevice()){
       imageMode(CENTER);
       image(welcomeBannerM, cx, cy);
       textFont(mainFont);
       fill(darkColor);
-      textAlign(CENTER, BASELINE);
-      
+      textAlign(CENTER, BASELINE);      
       textSize(30);
-      text("Bienvenido", cx, cy - 150);
-      
+      text("Bienvenido", cx, cy - 150);    
       textSize(50);
-      text("Consulta de notas", cx, cy - 80);
-      
+      text("Consulta de notas", cx, cy - 80);     
       textFont(secondaryFont);
       textSize(20);
       text("Ingrese su código para consultar sus notas", cx - 200, cy - 30, 400, 200);
@@ -132,13 +131,10 @@ function draw() {
       textFont(mainFont);
       fill(darkColor);
       textAlign(CENTER, BASELINE);
-      
       textSize(20);
       text("Bienvenido", cx, cy - 90);
-      
       textSize(30);
       text("Consulta de notas", cx, cy - 50);
-      
       textFont(secondaryFont);
       textSize(16);
       text("Ingrese su código para consultar sus notas", cx - 200, cy - 10, 400, 200); 
