@@ -260,7 +260,7 @@ class ViewManager {
       fill(this.darkTextColor);
       text(course.name, 48, 48 + (20));
     
-      let xSem = 48 + textWidth(course.name);
+      let xSem = 48 + textWidth(course.name+" ");
       textSize(20);
       text(' / '+course.semester, xSem, 48 + (20));
     }

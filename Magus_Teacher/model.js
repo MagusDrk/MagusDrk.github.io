@@ -84,9 +84,9 @@ class Model {
     let f = 0;
     let name = data[f][0];
     f++;
-    let group = data[f][1]; 
+    let semester = data[f][1]; 
     f++;
-    let semester = data[f][1];
+    let group = data[f][1];
     f++;
     let credits = data[f][1]; 
     f++; 
@@ -146,7 +146,11 @@ class Model {
       col++;
       
       let target = float(data[f][col].replace(',', '.')).toFixed(1);
+      col++;
+      
       let absences = int(data[f][col]);
+      col++;
+      
       let aStudent = new Student(id, names, lastnames, email, program, grade, target, absences);
 
       for (let c = 0; c < this.course.cutConfig.length; c++) {
@@ -193,10 +197,8 @@ class Model {
     //data es una matriz con cada una de las celdas de la hoja de notas. Cada hoja de notas es un grupo
     
 
-    let firstColumn = 5;
-    if (group == 1) {
-      firstColumn = 6;
-    }   
+    let firstColumn = 4;
+ 
     for (let f = 1; f < data.length; f++) { 
       //Este ciclo se ejecuta para cada una de las filas de notas:
       
@@ -208,7 +210,7 @@ class Model {
       let aGroup = new ActivityGroup(gName, gAverage, gPercentage);
       
       //Se crea cada una de las actividades disponibles en la tabla
-      if (group != 3) {
+      if (group != 3) { //Si es el examen final, solo se carga una actividad
         for (let c = firstColumn; c < data[f].length; c++) {
           let aName = data[0][c];
           let aScore = float(data[f][c].replace(',', '.')).toFixed(1);
