@@ -74,7 +74,6 @@ function onEnterKeyEvent(){
 }
 
 function dataLoaded(response) {
-console.log(response);
   let res = model.createModel(response);
   if (res) {
     
