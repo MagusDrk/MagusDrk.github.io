@@ -1,4 +1,4 @@
-class ViewManager {
+this.loginButton.class ViewManager {
 
   constructor() {
     //Propiedades para escalar el diseño
@@ -119,7 +119,7 @@ class ViewManager {
 
     this.idInput = createInput();
     this.idInput.attribute('placeholder', 'Ingrese aquí su código');
-    this.idInput.attribute('onkeypress', 'onEnterKeyEvent()');
+    this.idInput.
     this.idInput.hide();
 
     this.loginButton = createButton('Ingresar');
