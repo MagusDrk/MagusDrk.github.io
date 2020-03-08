@@ -142,7 +142,7 @@ class Model {
       col++;
       col++;
 
-      let grade = float(data[f][col].replace(',', '.')).toFixed(1);
+      let grade = float(data[f][col].replace(',', '.'));//.toFixed(1);
       col++;
       
       let target = float(data[f][col].replace(',', '.')).toFixed(1);
@@ -173,22 +173,24 @@ class Model {
     let notes = [];
     for (let i = 0; i < this.course.students.length; i++) {
       let theNote = this.course.students[i].grade;
-      if(!notes.includes(theNote)){
+      //if(!notes.includes(theNote)){
         notes.push(theNote);
-      }
+      //}
     }
     //ordena de mayor a menor
     notes.sort((a, b) => (float(a) < float(b)) ? 1 : -1);
         
     //asigna a cada estudiante el puesto según se organizan las notas
     for (let i = 0; i < this.course.students.length; i++) {  
-      let pos = notes.indexOf(this.course.students[i].grade);
-      if(pos < 5){
-        this.course.students[i].position = int(pos+1);
-      } else if(pos < 10){
-        this.course.students[i].position = '>5';
+      let pos = notes.indexOf(this.course.students[i].grade) +1;
+      if(pos <= 5) {
+        this.course.students[i].position = int(pos);
+      } else if(pos <= 10) {
+        this.course.students[i].position = 'top 10';
+      } else if(pos <= 20) {
+        this.course.students[i].position = 'top 20';
       } else {
-        this.course.students[i].position = '>10';
+        this.course.students[i].position = '>20';
       }
     }
   }

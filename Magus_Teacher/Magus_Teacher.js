@@ -67,8 +67,14 @@ function studentLogin() {
   }
 }
 
-function dataLoaded(response) {
+function onEnterKeyEvent(){
+  if(keyCode==13){
+    studentLogin();
+  }
+}
 
+function dataLoaded(response) {
+console.log(response);
   let res = model.createModel(response);
   if (res) {
     
