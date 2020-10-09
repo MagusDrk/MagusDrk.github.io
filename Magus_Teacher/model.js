@@ -271,6 +271,7 @@ class Model {
       return true;
     } catch (err){
       view.setError('ERROR: La hoja \''+page+'\' no cuenta con el formato correcto. Por favor, comuníquese con el administrador del sistema para solucionar este incidente.');
+      console.log(err);
       return false;
     }
     
