@@ -33,11 +33,16 @@ class ViewManager {
     this.ring = [];
     this.shield = [];
 
+    //Sonidos
+    this.soundPlaying = false;
+    this.backgroundSound = null;
+
     //DOM para manejo de sesiones
     this.courseSelect = null;
     this.idInput = null;
     this.loginButton = null;
     this.logoutButton = null;
+    this.soundButton = null;
     this.loginErrorMessage = null;
 
     //Propiedad para mostrar mensajes de estado 
@@ -47,6 +52,7 @@ class ViewManager {
   loadAssets() {
     this.loadFonts();
     this.loadImages();
+    this.loadSounds();
     this.createDOM();
   }
 
@@ -57,6 +63,13 @@ class ViewManager {
     );
     loadFont('assets/GothamBook.ttf', font => {
       this.secondaryFont = font;
+    }
+    );
+  }
+
+  loadSounds() {
+    loadSound('assets/magugori.mp3', sound => {
+      this.backgroundSound = sound;
     }
     );
   }
@@ -129,6 +142,10 @@ class ViewManager {
     this.logoutButton = createButton('Salir');
     this.logoutButton.mousePressed(studentLogout);
     this.logoutButton.hide();
+
+    this.soundButton = createButton("<span><img src='assets/volume-x.svg' style='width: 15px; filter: invert(1);'></span>");
+    this.soundButton.mousePressed(soundChange);
+    this.soundButton.hide();
   }
 
   createView() {
@@ -136,11 +153,11 @@ class ViewManager {
     view.updateScale();
     createCanvas(windowWidth, max(this.myHeight*this.scl, windowHeight));
   }
-  
-  showOptions(options){
+
+  showOptions(options) {
     //this.courseSelect.clear();
-    for(let i = 0; i < options.length; i++){
-      this.courseSelect.option(options[i].name, options[i].url);  
+    for (let i = 0; i < options.length; i++) {
+      this.courseSelect.option(options[i].name, options[i].url);
     }
   }
 
@@ -174,21 +191,21 @@ class ViewManager {
     this.loginButton.position(cx-50, cy+80);
     this.loginButton.size(100);
     this.loginButton.show();
-    
+
     //Zona de errores:
-    
-    if(this.loginErrorMessage){
+
+    if (this.loginErrorMessage) {
       fill(color(0, 0, 0, 180));
       rect(cx - 200, cy + 180, 400, 100, 10);
-      
+
       textSize(14);
       fill(this.clearTextColor);
       textAlign(CENTER, TOP);
       text(this.loginErrorMessage, cx - 200, cy + 180 + 14, 400, 100);
     }
   }
-  
-  setError(msg){
+
+  setError(msg) {
     this.loginErrorMessage = msg;
   }
 
@@ -218,11 +235,11 @@ class ViewManager {
     this.updateScale();
     push();
     scale(this.scl);
-    
+
     //imageMode(CORNER);
     //simage(this.mockupImage, 0, 0);
     //simage(this.reticleImage, 0, 0);
-    
+
     this.drawHeader(model.course, model.student);
     this.drawStats(model.student, model.course);
 
@@ -252,7 +269,7 @@ class ViewManager {
     imageMode(CORNER);
     simage(this.headerBackground, 0, 0);
     if (course) {
-      
+
       //Título del curso
       textAlign(LEFT, BASELINE);
       noStroke();
@@ -260,7 +277,7 @@ class ViewManager {
       textSize(30);// texthierarchy[?];
       fill(this.darkTextColor);
       text(course.name, 48, 48 + (20));
-    
+
       let xSem = 48 + textWidth(course.name+" ");
       textSize(20);
       text(' / '+course.semester, xSem, 48 + (20));
@@ -269,7 +286,7 @@ class ViewManager {
       textFont(this.secondaryFont);
       textSize(20);
       text(student.names+' '+student.lastnames, 48, 48 + 44);
-    
+
       textSize(14);
       text(student.id, 48, 48 + 62);
 
@@ -277,17 +294,22 @@ class ViewManager {
       let xb = (this.myWidth-48)*this.scl - (this.logoutButton.width);
       let yb = 48*this.scl;
       this.logoutButton.position(xb, yb);
+
+      this.soundButton.show();
+      let xsb = xb - (this.soundButton.width) - 10;
+      let ysb = 48*this.scl;
+      this.soundButton.position(xsb, ysb);
     }
   }
 
   drawStats(student, course) {
-    
+
     if (student) {
-    imageMode(CORNER);
-    simage(this.statsBackground, 48, 188);
-    
-    this.drawGrade(student.grade, 72, 212, 234, 240);
-    
+      imageMode(CORNER);
+      simage(this.statsBackground, 48, 188);
+
+      this.drawGrade(student.grade, 72, 212, 234, 240);
+
       //Indicador de liga
       let currentLeague = 'Liga '+this.getGradeLeagueName(int(student.grade));
       let nextLeague = this.getGradeLeagueName(int(student.grade) + 1);
@@ -318,36 +340,36 @@ class ViewManager {
       this.drawPositionIndicator(72, 836, 234, 162, graph, grade, pos, count);
     }
   }
-  
-  drawGrade(grade, x, y, w, h){
-    
+
+  drawGrade(grade, x, y, w, h) {
+
     //Dibuja el circulo de progreso
-    
+
     //Primero la imagen
     let theRing = this.ring[int(grade)];
     let sclR = 234/theRing.width;
     simage(theRing, x, y, theRing.width*(sclR), theRing.height*(sclR));
-    
+
     //Luego el arco de progreso
     let xmid = x + (w/2);
     let ymid = y + (w/2);
     // Sobre el ancho, no el alto, porque es un circulo perfecto,
     // el alto se usa para ubicar el escudo
-    
+
     let prog = map(grade, 0, 5, 1, 350);
-    
+
     noFill();
-    
+
     strokeWeight(5);
     stroke(this.getGradeColor(grade));
     arc(xmid, ymid-2, w-22, w-22, radians(100), radians(100+prog));
-    
+
     //Dibuja el escudo a escala
     imageMode(CENTER);
     let theShield = this.shield[int(grade)];
     let sclS = 216/theShield.width;
     simage(theShield, xmid, y+h-60, theShield.width*(sclS), theShield.height*(sclS)); //216/800
-    
+
     //Dibuja la nota
     textSize(80);
     noStroke();
@@ -367,16 +389,16 @@ class ViewManager {
   }
 
   drawIndicator(title, next, curr, min, max, x, y, w, h) {
-    
+
     //Información del puesto
     noStroke();
     textSize(20);
     stextFont(this.secondaryFont);
     fill(this.darkTextColor);
     textAlign(LEFT, BASELINE);
-    
+
     text(title, x, y+16);
-    
+
     min = float(min).toFixed(1);
     max = float(max).toFixed(1);
     textFont(this.secondaryFont);
@@ -385,7 +407,7 @@ class ViewManager {
     fill(this.darkTextColor);  
     textAlign(LEFT, BASELINE);
     text(min, x, y + 48-2);
-    
+
     textAlign(RIGHT, BASELINE);
     text(max, x+w, y + 48-2);
 
@@ -397,11 +419,11 @@ class ViewManager {
     if (missing < 0) {
       txt = 'Haz alcanzado '+next+ ' (+'+(-missing.toFixed(1))+')';
     }
-    
+
     noStroke(0);
     fill(this.darkTextColor);
     text(txt, x+w, y+h-16);
-    
+
     strokeWeight(1);
     stroke(this.darkTextColor);
     line(x, y+h, x+w, y+h);
@@ -461,7 +483,7 @@ class ViewManager {
   }
 
   drawLivesIndicator(x, y, w, h, curr, max) {
-    
+
     let txt = 'Ausencias '+curr;
     //Información del puesto
     noStroke();
@@ -469,13 +491,13 @@ class ViewManager {
     textAlign(LEFT, BASELINE);
     textSize(20);
     text(txt, x, y+16);
-    
+
     let msgWidth = textWidth(txt);
     textSize(15);
     text('/'+max, x+msgWidth, y+16);
 
     let rem = max - curr;
-    
+
     let unitMargin = 8;
     let unitW = (w / max) + (unitMargin/max); //La segunda parte es para ajustar las vidas al ancho disponible
 
@@ -492,25 +514,25 @@ class ViewManager {
     fill(this.darkTextColor);
     textAlign(RIGHT, BASELINE);
     textFont(this.secondaryFont);
-    
-    if(rem < 0){
+
+    if (rem < 0) {
       txt = 'Has perdido por ausencias. (' + rem + ')';
     } else {
-      if(rem == 1){
+      if (rem == 1) {
         txt = 'te queda '+rem+' ausencia';
       } else {
         txt = 'te quedan '+rem+' ausencias';
       }
     }
     text(txt, x+w, y+h-16);
-    
+
     strokeWeight(1);
     stroke(this.darkTextColor);
     line(x, y+h, x+w, y+h);
   }
 
   drawPositionIndicator(x, y, w, h, data, curr, pos, rel) {
-    
+
     let txt = 'Puesto '+pos;
     //Información del puesto
     noStroke();
@@ -518,28 +540,28 @@ class ViewManager {
     textAlign(LEFT, BASELINE);
     textSize(20);
     text(txt, x, y+16);
-    
+
     let msgWidth = textWidth(txt);
     textSize(15);
     text('/'+rel, x+msgWidth, y+16);
 
     //Grafica de distribución
     let sep = w / (data.length-1);
-    
+
     noStroke();
     fill(this.mainColor);
-    
+
     beginShape();
     curveVertex(x, y+h-32);
     curveVertex(x, y+h-32);
-    
+
     for (let i = 0; i < data.length; i++) {  
       let theVal = (h-82)*(data[i]/max(data));
       let theX = x+(i*sep);
       let theY = y+h-32-(theVal);
       vertex(theX, theY);
     }
-    
+
     curveVertex(x+w, y+h-32);
     curveVertex(x+w, y+h-32);
     endShape();
@@ -553,34 +575,34 @@ class ViewManager {
     strokeWeight(3);
     let px = map(curr, 0, 5, 0, w);
     line(x+px, y+48, x+px, y+h-32);
-    
+
     noStroke();
     textSize(14);
     textAlign(CENTER, BASELINE);
     fill(this.darkTextColor);
     text(curr, x+px, y+46);
-    
+
     //Indicadores del grafico
     for (let i = 0; i < data.length; i++) {  
-      
+
       let val = float(i).toFixed(1);
-      if(i == 0){
+      if (i == 0) {
         val = '';
       }
-      
+
       let theX = x+(i*sep);
-      
+
       noStroke();
       textSize(14);
       fill(this.darkTextColor);
       textAlign(RIGHT, BASELINE);
       text(val, theX, y+h-16);
-      
+
       strokeWeight(1);
       stroke(this.darkTextColor);
       line(theX, y+h-35, theX, y+h-25);
     }
-    
+
     strokeWeight(1);
     stroke(this.darkTextColor);
     line(x, y+h, x+w, y+h);
@@ -588,19 +610,19 @@ class ViewManager {
 
   //cut viene desde 0
   drawCut(cut, x, y) {
-       
+
     if (cut) {
-      
+
       //Imagenes de fondo
       imageMode(CORNER);
       simage(this.cutBannerImage, x, y);
       simage(this.cutBackground, x+152, y);
-      
+
       //Textos del banner
       noStroke();
       fill(this.clearTextColor);
       textAlign(CENTER, BASELINE);
-      
+
       stextFont(this.mainFont);
       textSize(30);
       text(cut.name, x+64, y+74);
@@ -611,13 +633,13 @@ class ViewManager {
       stextFont(this.secondaryFont);
       textSize(20);
       text(cut.percentage, x+64, y+180);
-       
+
       // Separadores horizontales
       strokeWeight(1);
       stroke(this.darkTextColor);
-      line(x+176, y+86, x+914 , y+86);
-      line(x+176, y+160, x+914 , y+160);
-      
+      line(x+176, y+86, x+914, y+86);
+      line(x+176, y+160, x+914, y+160);
+
       // Grupos de notas
       this.drawGroup(cut.groups[0], x+152, y+24);
       this.drawGroup(cut.groups[1], x+152, y+98);
@@ -627,20 +649,20 @@ class ViewManager {
 
   //cut y group vienen desde 0
   drawGroup(group, x, y) {
-  
+
     //Nota del grupo
     noStroke();
     fill(this.darkTextColor);
-    
+
     textAlign(CENTER, TOP);
     textSize(30);
     text(group.average, x + 24 + 24, y+22); // 22 = workaround for TOP 
-    
+
     //Porcentaje del grupo
     textSize(20);
     textAlign(CENTER, BASELINE);
     text(group.percentage, x + 24 + 24, y + 50);
-    
+
     //Nombre del grupo
     textSize(20);
     textLeading(20);
@@ -663,7 +685,7 @@ class ViewManager {
     textAlign(CENTER, CENTER);
     stextFont(this.secondaryFont);
     text(note.score, x + 20, y + 50 + 5);// 5 = workaround for CENTER 
-    
+
     let per = note.score/5.0;
     this.drawProgressBar(x, y, 40, 40, 'vertical', per, 0.6);
 
@@ -711,14 +733,31 @@ class ViewManager {
     this.idInput.hide();
     this.loginButton.hide();
     this.loginErrorMessage = '';
+    userStartAudio();
+    this.backgroundSound.loop();
+    this.backgroundSound.setVolume(0.5);
+    this.soundPlaying = true;
   }
 
   hideLogout() {
     this.logoutButton.hide();
+    this.soundButton.hide();
+    this.backgroundSound.stop();
+    this.soundPlaying = false;
   }
 
   updateScale() {
     this.scl = windowWidth/this.myWidth;
+  }
+
+  soundChange() {
+    if(this.soundPlaying){
+      this.backgroundSound.setVolume(0, 1);
+      this.soundPlaying = false;
+    } else {
+      this.backgroundSound.setVolume(0.5, 1);
+      this.soundPlaying = true;
+    }
   }
 }
 
@@ -790,10 +829,10 @@ class ActivityDetail {
     tint(255, this.opacity);
     simage(view.activityBackground, this.x+20, this.y);
     tint(255, 255);
-    
+
     let c = color(this.myColor);
     c.setAlpha(this.opacity);
-    
+
     fill(c);
     c = color("#ff9933");
     c.setAlpha(this.opacity);
@@ -804,7 +843,7 @@ class ActivityDetail {
     vertex(this.xi, this.yi+10.5);
     vertex(this.xi+22, this.yi+18.5);
     endShape();
-    
+
     c = color(view.darkTextColor);
     c.setAlpha(this.opacity);
 

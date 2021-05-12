@@ -5,8 +5,8 @@ let data = new DataManager();
 let view = new ViewManager();
 
 function setup() {
-  view.createView();
   view.loadAssets();
+  view.createView();
 }
 
 function draw() {
@@ -36,13 +36,8 @@ function coursesLoaded(response) {
 
   let info = [];
   for (let i = 1; i < data.length; i++) {
-    let anInfo = {
-      'name': 
-      data[i][0], 
-      'url': 
-      data[i][1],
-    };
-  info.push(anInfo);
+    let anInfo = {'name': data[i][0], 'url': data[i][1]};
+    info.push(anInfo);
   }
   model.courseList = info;
   view.showOptions(info);
@@ -67,8 +62,8 @@ function studentLogin() {
   }
 }
 
-function onEnterKeyEvent(){
-  if(keyCode==13){
+function onEnterKeyEvent() {
+  if (keyCode==13) {
     studentLogin();
   }
 }
@@ -76,7 +71,7 @@ function onEnterKeyEvent(){
 function dataLoaded(response) {
   let res = model.createModel(response);
   if (res) {
-    
+
     view.addToStatusBar('Datos cargados!');
 
     let course = view.courseSelect.value();
@@ -84,7 +79,7 @@ function dataLoaded(response) {
     let id = view.idInput.value();
 
     let res = null;
-    if (courseName == 'DEMO UNIR' && id == 'DEMO UNIR') {
+    if (courseName == 'DEMO EL BOSQUE' && id == 'magugori') {
       res = model.loadStudent('random');
     } else {
       res = model.loadStudent(id);
@@ -100,4 +95,8 @@ function dataLoaded(response) {
 function studentLogout() {
   model.clearStudent();
   view.hideLogout();
+}
+
+function soundChange() {
+  view.soundChange();
 }
