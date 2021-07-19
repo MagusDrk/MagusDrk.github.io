@@ -36,6 +36,7 @@ class ViewManager {
     //Sonidos
     this.soundPlaying = false;
     this.backgroundSound = null;
+    this.MAX_VOLUME = 0.1;
 
     //DOM para manejo de sesiones
     this.courseSelect = null;
@@ -735,7 +736,7 @@ class ViewManager {
     this.loginErrorMessage = '';
     userStartAudio();
     this.backgroundSound.loop();
-    this.backgroundSound.setVolume(0.5);
+    this.backgroundSound.setVolume(this.MAX_VOLUME);
     this.soundPlaying = true;
   }
 
@@ -755,7 +756,7 @@ class ViewManager {
       this.backgroundSound.setVolume(0, 1);
       this.soundPlaying = false;
     } else {
-      this.backgroundSound.setVolume(0.5, 1);
+      this.backgroundSound.setVolume(this.MAX_VOLUME, 1);
       this.soundPlaying = true;
     }
   }
